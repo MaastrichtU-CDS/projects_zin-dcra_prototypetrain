@@ -1,4 +1,6 @@
-FROM alpine:latest
+FROM python:latest
+
+RUN apk add --no-cache bash
 
 RUN touch /input.txt
 RUN touch /output.txt
