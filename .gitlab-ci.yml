@@ -3,6 +3,8 @@ docker-build:
   # Official docker image.
   image: alpine:latest
   stage: build
+  tags: 
+    - mdw-server
   services:
     - docker:dind
   before_script:
