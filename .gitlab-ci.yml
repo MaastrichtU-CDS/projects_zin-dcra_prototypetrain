@@ -1,7 +1,7 @@
 # This file is a template, and might need editing before it works on your project.
 docker-build:
   # Official docker image.
-  image: alpine:latest
+  image: python:3.7
   stage: build
   tags: 
     - mdw-server
