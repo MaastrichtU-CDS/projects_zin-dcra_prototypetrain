@@ -8,8 +8,6 @@ stages:
     
 dockerize:
   stage: dockerize
-  tags:
-    - mdw-server-shell
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker tag "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA" "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_REF_SLUG"
