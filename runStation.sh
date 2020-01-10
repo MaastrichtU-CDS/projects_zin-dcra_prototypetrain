@@ -1,2 +1,1 @@
-cat /input.txt
-echo "hello from docker station" > /output.txt
+python3 /app/demoStationAlgoritm.py

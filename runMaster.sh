@@ -1,2 +1,1 @@
-cat /input.txt
-echo "hello from docker master" > /output.txt
+python3 /app/demoMasterAlgoritm.py

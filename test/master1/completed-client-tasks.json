@@ -1,0 +1,16 @@
+[
+    {
+        "id": 2,
+        "calculationStatus": "COMPLETED",
+        "stationId": 1,
+        "input": "15",
+        "result": ""
+    },
+    {
+        "id": 3,
+        "calculationStatus": "COMPLETED",
+        "stationId": 1,
+        "input": "32",
+        "result": ""
+    }
+]
