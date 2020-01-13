@@ -1,1 +1,1 @@
-python3 /app/demoMasterAlgoritm.py
+python3 /app/demoMasterAlgorithm.py
