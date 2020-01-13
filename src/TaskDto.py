@@ -16,7 +16,6 @@ class TaskDto:
 
 	def export(self):
 		taskDtoDict = {}
-		taskDtoDict["id"] = self.idNum 
 		taskDtoDict["result"] = self.result
 		taskDtoDict["input"] = self.inputStr
 		taskDtoDict["calculationStatus"] = self.calculationStatus
