@@ -4,13 +4,15 @@
         "calculationStatus": "COMPLETED",
         "stationId": 1,
         "input": "15",
-        "result": "30"
+        "result": "30",
+        "iteration": 1
     },
     {
         "id": 5,
         "calculationStatus": "COMPLETED",
         "stationId": 1,
         "input": "32",
-        "result": "64"
+        "result": "64",
+        "iteration": 1
     }
 ]
