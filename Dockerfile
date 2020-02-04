@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:3.7
 
 RUN touch /opt/input.txt
 RUN touch /opt/output.txt
