@@ -1,1 +1,1 @@
-python3 /app/demoStationAlgorithm.py
+python3 /app/stationAlgorithmWrapper.py

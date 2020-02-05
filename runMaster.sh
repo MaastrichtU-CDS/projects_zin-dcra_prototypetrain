@@ -1,1 +1,1 @@
-python3 /app/demoMasterAlgorithm.py
+python3 /app/masterAlgorithmWrapper.py
