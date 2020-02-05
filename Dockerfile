@@ -12,6 +12,11 @@ COPY ./src /app
 
 WORKDIR /app
 RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y dos2unix
+RUN dos2unix /run.sh
+RUN dos2unix /runMaster.sh
+RUN dos2unix /runStation.sh
+RUN dos2unix /app/**
 
 WORKDIR /
 CMD ["sh", "/run.sh"]
