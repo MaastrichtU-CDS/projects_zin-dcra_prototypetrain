@@ -23,3 +23,26 @@ The result can never be any identifiable data as it is returned to the server/ma
 - copy this repository to your own.
 - use the StationInterface to read and write output.
 - use the simulateMasterAndStation as an example how to debug your algorithm.
+
+## Setting up the container
+use these steps to manage a new train container locally
+
+- using your preferred terminal to go to the root of the repository and use the following commands
+### build the image
+- run "docker build --no-cache -t test_train ."
+### start the image
+- run "docker run -d -it --name=test_train test_train"
+### Enter container for interactive debugging
+- docker exec -it test_train /bin/bash
+### Copy new version to running container if you make changes
+- docker cp ./src/. test_train:/app
+
+## Cleaning up when you are done
+### Stop the image
+- docker stop test_train
+### Remove the image
+- docker rm test_train
+
+## Debugging using jupyter
+- install anaconda for your OS (https://www.anaconda.com/distribution/)
+- run "conda install -c conda-forge jupyterlab" in the anaconda terminal
