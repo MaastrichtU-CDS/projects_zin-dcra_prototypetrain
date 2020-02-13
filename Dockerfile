@@ -4,6 +4,8 @@ RUN touch /opt/input.txt
 RUN touch /opt/output.txt
 RUN touch /opt/completed-client-tasks.json
 RUN touch /opt/new-client-tasks.json
+RUN touch /opt/error.log
+RUN touch /opt/train.log
 
 COPY ./run.sh /run.sh
 COPY ./runMaster.sh /runMaster.sh

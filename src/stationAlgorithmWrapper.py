@@ -1,25 +1,15 @@
 from StationInterfaceFunctions import StationInterfaceFunctions
 import json
+from stationAlgorithm import *
 
 # ------ demo algorithm to demonstrate use of the Railway platform ------ 
 
-# use the station interface to read all data
-stationInterface = StationInterfaceFunctions()
-inputStr = stationInterface.parseInputData()
-
-outputStr = ''
-# --------------------------- PASTE YOUR ALGORITHM HERE -------------------------------
-# define the "outputStr" varialble
-# perform station algorithm
 try:
-    inputJson = json.loads(inputStr)
-    inputNumber = float(inputJson['number_to_process'])
-    outputNum = inputNumber * 2
-except:
-    outputNum = float('nan')
+    # use the station interface to read all data
+    stationInterface = StationInterfaceFunctions()
+    inputStr = stationInterface.parseInputData()
 
-outputStr = json.dumps({'calculation_result': outputNum})
-# --------------------------- PASTE YOUR ALGORITHM HERE END ---------------------------
+    outputStr = stationAlgorithm(inputStr)
 
-# use the station interface to write all data
-stationInterface.writeOutputData(outputStr)
+    # use the station interface to write all data
+    stationInterface.writeOutputData(outputStr)

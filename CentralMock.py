@@ -1,67 +1,48 @@
-import json
-import os
+import json, os, time, shutil, subprocess
 from src.TaskDto import *
-import subprocess
+from distutils.dir_util import copy_tree
 
 class CentralMock:
     _INPUT_PATH = './tmp/input.txt'
     _OUTPUT_PATH = './tmp/output.txt'
     _COMPLETED_TASK_PATH = './tmp/completed-client-tasks.json'
     _NEW_TASK_PATH = './tmp/new-client-tasks.json'
+    _ERROR_PATH = './tmp/error.log'
+    _LOG_PATH = './tmp/train.log'
     
     iteration = 0
     train_is_done = False
-    masterOutput = ''
-    
-    def __init__(self):
-        self.stationIterations = dict()
-        self.masterItetations = dict()
-    
-    def setTasksForStationIteration(self, tasks, iteration):
-        self.stationIterations[iteration] = completedTasks
-        
-    def setMasterTaskForIteration(self, task, iteration):
-#         task = TaskDto()
-#         task.idNum = completedTasks.__len__() + 1
-#         task.inputStr = masterInput
-        self.masterItetations[0] = task
-    
-    def performStationTasks(self):
-        tasks = self.iteration[0]
-        for taskDto in tasks:
-            if taskDto.calculationStatus == 'REQUESTED':
-                #do something
-                taskDto.calculationStatus == "COMPLETED"
-                return
-            else:
-                completed = completed + 1
-        if self.stationTasks.__len__ == completed:
-            #create new master task
-            print('create new master task')
-            print(self.stationTasks)
             
-    def perfomMasterTask(self):
+    def perfomMasterTask(self, inputStr, completedTaskDtos):
         self.startContainer()
-        self.writeTaskJson()
-        self.writeMasterInput()
-        self.copyMasterFilesToDocker()
+        self.writeCompletedTaskJson(completedTaskDtos)
+        self.writeInput(inputStr)
+        self.copyFilesToDocker()
         os.system('docker exec test_train sh /runMaster.sh')
-        self.copyMasterOutputFromDocker()
+        self.copyFilesFromDocker()
+        self.stopContainer()
+        return self.readOutput(), self.readNewTasks()
+
+    def perfomStationTask(self, inputStr):
+        self.startContainer()
+        self.writeInput(inputStr)
+        self.copyFilesToDocker()
+        os.system('docker exec test_train sh /runStation.sh')
+        self.copyFilesFromDocker()
         self.stopContainer()
         return self.readOutput()
         
-    def writeTaskJson(self):
+    def writeCompletedTaskJson(self, taskDtos):
         tasksList = []
-        taskDtos = self.stationIterations[self.iteration]
         for task in taskDtos:
             tasksList.append(self.exportTaskDtoWithId(task))
         fp = open(self._COMPLETED_TASK_PATH, 'w+')
         json.dump(tasksList, fp)
         fp.close()
         
-    def writeMasterInput(self):
+    def writeInput(self, inputStr):
         fp = open(self._INPUT_PATH, 'w+')
-        fp.write(self.masterItetations[self.iteration].inputStr)
+        fp.write(inputStr)
         fp.close()
         
     def readOutput(self):
@@ -69,25 +50,27 @@ class CentralMock:
         output = fp.read()
         fp.close()
         return output
+
+    def readNewTasks(self):
+        fp = open(self._NEW_TASK_PATH, 'r')
+        output = fp.read()
+        fp.close()
+        return json.loads(output)
     
-    def copyMasterFilesToDocker(self):
-        subprocess.call('docker cp ' + self._COMPLETED_TASK_PATH + ' test_train:/opt/completed-client-tasks.json')
-        subprocess.call('docker cp ' + self._INPUT_PATH + ' test_train:/opt/input.txt')
+    def copyFilesToDocker(self):
+        subprocess.call('docker cp ./tmp/. test_train:/opt', shell=True)
         
-    def copyMasterOutputFromDocker(self):
-        subprocess.call('docker cp test_train:/opt/output.txt ' + self._OUTPUT_PATH)
-        
-    def copyOutputFromDocker(self):
-        print('')
+    def copyFilesFromDocker(self):
+        subprocess.call('docker cp test_train:/opt/. ./tmp', shell=True)
         
     def startContainer(self):
         #start train (like Station would)
-        subprocess.call('docker run -d -it --name=test_train test_train')
+        subprocess.call('docker run -d -it --name=test_train test_train', shell=True)
         
     def stopContainer(self):
         #stop train (like Station would)
-        subprocess.call('docker stop test_train')
-        subprocess.call('docker rm test_train')
+        subprocess.call('docker stop test_train', shell=True)
+        subprocess.call('docker rm test_train', shell=True)
         
     def doesContainerRespond(self):
         result = subprocess.run('docker ps', shell=True, stdout=subprocess.PIPE)
@@ -96,7 +79,28 @@ class CentralMock:
             return True
         else:
             return False
+
+    def clearTmpFolder(self):
+        if os.path.lexists('./tmp/'):
+            shutil.rmtree('./tmp/')
+            os.mkdir('./tmp/')
+
+    def clearTrainFolder(self):
+        if os.path.lexists('./train/'):
+            shutil.rmtree('./train/')
+            os.mkdir('./train/')
         
+    def archiveRun(self, master, iteration, stationId):
+        if master:
+            iteration_dir = os.path.join('./train','iteration_' + str(iteration), 'master', 'station_id_' + str(stationId))
+        else:
+            iteration_dir = os.path.join('./train','iteration_' + str(iteration), 'station', 'station_id_' + str(stationId))
+        if not os.path.lexists(iteration_dir):
+            os.makedirs(iteration_dir)
+        copy_tree('./tmp', iteration_dir)
+        self.clearTmpFolder()
+        
+
     #this functions is needed because the export cannot export id for the Java app but we need it here
     def exportTaskDtoWithId(self, task):
         taskDtoDict = {}

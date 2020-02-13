@@ -9,7 +9,7 @@ class TaskDto:
 	def __init__(self, taskDtoJson = None):
 		if(taskDtoJson == None):
 			return
-		self.idNum = taskDtoJson["id"]
+		# self.idNum = taskDtoJson["id"]
 		self.result = taskDtoJson["result"]
 		self.inputStr = taskDtoJson["input"]
 		self.calculationStatus = taskDtoJson["calculationStatus"]
