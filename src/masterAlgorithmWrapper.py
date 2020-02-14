@@ -4,6 +4,8 @@ import logging
 from masterAlgorithm import *
 
 # ------ demo algorithm to demonstrate use of the Railway platform ------ 
+logging.basicConfig(filename='/opt/train.log',level=logging.DEBUG, format='%(asctime)s %(filename)s %(module)s %(funcName)s %(message)s')
+logging.info('Starting a new master run')
 try:
     # use the station interface to read all data
     stationInterface = StationInterfaceFunctions()

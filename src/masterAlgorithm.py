@@ -1,4 +1,4 @@
-import json
+import json, logging
 from TaskDto import TaskDto
 
 # to start the next iteration define the "newTaskDtos" variable
@@ -6,13 +6,15 @@ from TaskDto import TaskDto
 def masterAlgorithm(inputStr, completedClientTasks):
     newTaskDtos = []
     outputStr = ''
-     
+    logging.info('starting new master task')
+
     # the input chosen is JSON, convert it now.
     inputJson = json.loads(inputStr)
     maxIterations = int(inputJson['iterations'])
     
     # this is the one or multiple station run example
     if completedClientTasks[0].iteration < maxIterations:
+        logging.info('master not done yet, setting up the next iteration')
         newTaskDtos = []
         for task in completedClientTasks:
             newTask = TaskDto()
@@ -27,17 +29,13 @@ def masterAlgorithm(inputStr, completedClientTasks):
             #as an example the interations variable is passed on without alterations
             outputStr = inputStr
     else:
-        #if last iteration
-        try:
-            output = 0
-            for task in completedClientTasks:
-                outputJson = json.loads(task.result)
-                output = output + float(outputJson['calculation_result'])
+        logging.info('master is done, calculating final result')
 
-                #no newTasks defined so the station algorithm will know this was the last master iteration
-        except:
-            output = float('nan')
-
+        output = 0
+        for task in completedClientTasks:
+            outputJson = json.loads(task.result)
+            output = output + float(outputJson['calculation_result'])
         outputStr = json.dumps({'total_sum': output})
+        #no newTasks defined so the station algorithm will know this was the last master iteration
         
     return outputStr, newTaskDtos
