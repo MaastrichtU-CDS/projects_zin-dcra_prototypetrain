@@ -7,7 +7,7 @@ from masterAlgorithm import *
 logging.basicConfig(filename='/opt/train.log',level=logging.DEBUG, format='%(asctime)s %(filename)s %(module)s %(funcName)s %(message)s')
 logging.info('Starting a new master run')
 try:
-    # use the station interface to read all data
+    # Use the station interface to read all data.
     stationInterface = StationInterfaceFunctions()
     inputStr = stationInterface.parseInputData()
     completedClientTasks = stationInterface.parseCompletedTasks()

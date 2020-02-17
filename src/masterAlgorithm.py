@@ -1,8 +1,8 @@
 import json, logging
 from TaskDto import TaskDto
 
-# to start the next iteration define the "newTaskDtos" variable
-# to finish the final iteration do not define the "newTaskDtos" variable
+# To start the next iteration define the "newTaskDtos" variable.
+# To finish the final iteration do not define the "newTaskDtos" variable.
 def masterAlgorithm(inputStr, completedClientTasks):
     newTaskDtos = []
     outputStr = ''
@@ -12,7 +12,7 @@ def masterAlgorithm(inputStr, completedClientTasks):
     inputJson = json.loads(inputStr)
     maxIterations = int(inputJson['iterations'])
     
-    # this is the one or multiple station run example
+    # This is a multiple station run example.
     if completedClientTasks[0].iteration < maxIterations:
         logging.info('master not done yet, setting up the next iteration')
         newTaskDtos = []
@@ -24,9 +24,9 @@ def masterAlgorithm(inputStr, completedClientTasks):
             newTask.iteration = task.iteration + 1
             newTaskDtos.append(newTask)
 
-            #new tasks means there will be a new master task.
-            #the output of this tasks will be sent to the next master task.
-            #as an example the interations variable is passed on without alterations
+            #If there are new tasks means a new master task will be created in central.
+            #The output of the current task will be the input for the next master task.
+            #As an example the iterations variable is passed on without alterations
             outputStr = inputStr
     else:
         logging.info('master is done, calculating final result')
@@ -36,6 +36,6 @@ def masterAlgorithm(inputStr, completedClientTasks):
             outputJson = json.loads(task.result)
             output = output + float(outputJson['calculation_result'])
         outputStr = json.dumps({'total_sum': output})
-        #no newTasks defined so the station algorithm will know this was the last master iteration
+        #No newTasks are defined here, so the station algorithm will assume this was the last master iteration.
         
     return outputStr, newTaskDtos
