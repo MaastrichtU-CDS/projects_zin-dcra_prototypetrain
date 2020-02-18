@@ -24,9 +24,9 @@ def masterAlgorithm(inputStr, completedClientTasks):
             newTask.iteration = task.iteration + 1
             newTaskDtos.append(newTask)
 
-            #If there are new tasks means a new master task will be created in central.
+            #If there are new tasks, a new master task will be created in central.
             #The output of the current task will be the input for the next master task.
-            #As an example the iterations variable is passed on without alterations
+            #As an example the iterations variable is passed on without alterations.
             outputStr = inputStr
     else:
         logging.info('master is done, calculating final result')
