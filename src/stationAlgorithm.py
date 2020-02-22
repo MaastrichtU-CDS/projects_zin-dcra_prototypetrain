@@ -33,11 +33,8 @@ def stationAlgorithm(inputStr):
 
     logging.info("Endpoint URL: " + os.environ.get("sparql_url"))
 
-    query = """PREFIX db: <http://localhost/rdf/ontology/>
-            select (COUNT(?s) AS ?myCount) where { 
-                ?s ?p db:Tumour_Treatment.
-            }
-        """
+    inputStruct = json.loads(inputStr)
+    query = inputStruct["query"]
     df = get_sparql_dataframe(os.environ.get("sparql_url"), query)
 
     outputStr = json.dumps(df.describe().to_json())
