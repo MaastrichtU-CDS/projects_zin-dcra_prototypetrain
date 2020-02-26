@@ -70,8 +70,8 @@ def stationAlgorithm(inputStr):
     df = get_sparql_dataframe(os.environ.get("sparql_url"), query)
 
     outData = {
-        "numericalStats": df.describe(exclude=['category']),
-        "categoricalStats": describe_category(df)
+        "numericalStats": df.describe(exclude=['category']).to_dict(),
+        "categoricalStats": describe_category(df).to_dict()
     }
     outputStr = json.dumps(outData)
 
