@@ -22,7 +22,39 @@ def get_sparql_dataframe(service, query):
             item.append(row.get(c, {}).get('value'))
         out.append(item)
 
-    return pd.DataFrame(out, columns=cols)
+    df = pd.DataFrame(out, columns=cols)
+
+    if len(processed_results['results']['bindings']) > 0:
+        firstRow = processed_results['results']['bindings'][0]
+        for c in cols:
+            varType = firstRow.get(c,{}).get("type")
+            if varType == "uri":
+                df[c] = df[c].astype("category")
+            if varType == "literal" or varType == "typed-literal":
+                dataType = firstRow.get(c,{}).get("datatype")
+                if dataType=="http://www.w3.org/2001/XMLSchema#int":
+                    df[c] = pd.to_numeric(df[c], errors='coerce')
+                if dataType=="http://www.w3.org/2001/XMLSchema#integer":
+                    df[c] = pd.to_numeric(df[c], errors='coerce')
+                if dataType=="http://www.w3.org/2001/XMLSchema#double":
+                    df[c] = pd.to_numeric(df[c], errors='coerce')
+                if dataType=="http://www.w3.org/2001/XMLSchema#string":
+                    df[c] = df[c].astype("category")
+    
+    return df
+
+def describe_category(df):
+    outSeries = pd.DataFrame()
+    for column in df.columns:
+        if str(df[column].dtype) == "category":
+            counts = df[column].value_counts()
+            rowNames = counts.index.values
+            counts = counts.to_frame(name="count")
+            counts["category"] = rowNames
+            counts["variable"] = column
+            counts = counts.reset_index(drop=True)
+            outSeries = outSeries.append(counts)
+    return outSeries
 
 def stationAlgorithm(inputStr):
     outputStr = ''
@@ -37,7 +69,11 @@ def stationAlgorithm(inputStr):
     query = inputStruct["query"]
     df = get_sparql_dataframe(os.environ.get("sparql_url"), query)
 
-    outputStr = json.dumps(df.describe().to_json())
+    outData = {
+        "numericalStats": df.describe(exclude=['category']),
+        "categoricalStats": describe_category(df)
+    }
+    outputStr = json.dumps(outData)
 
     logging.info('done with calculation')
 
