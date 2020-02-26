@@ -69,9 +69,15 @@ def stationAlgorithm(inputStr):
     query = inputStruct["query"]
     df = get_sparql_dataframe(os.environ.get("sparql_url"), query)
 
+    numericalStats = { }
+    try:
+        numericalStats = df.describe(exclude=['category']).to_json()
+    except:
+        print("No numerical data available?")
+
     outData = {
-        "numericalStats": df.describe(exclude=['category']).to_dict(),
-        "categoricalStats": describe_category(df).to_dict()
+        "numericalStats": numericalStats,
+        "categoricalStats": describe_category(df).to_json()
     }
     outputStr = json.dumps(outData)
 
