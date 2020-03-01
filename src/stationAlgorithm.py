@@ -71,7 +71,7 @@ def stationAlgorithm(inputStr):
 
     numericalStats = { }
     try:
-        numericalStats = df.describe(exclude=['category']).to_json()
+        numericalStats = df.describe(exclude=['category']).to_json(orient='records')
     except:
         print("No numerical data available?")
 
