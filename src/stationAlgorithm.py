@@ -77,7 +77,7 @@ def stationAlgorithm(inputStr):
 
     outData = {
         "numericalStats": numericalStats,
-        "categoricalStats": describe_category(df).to_json()
+        "categoricalStats": describe_category(df).to_json(orient='records')
     }
     outputStr = json.dumps(outData)
 
