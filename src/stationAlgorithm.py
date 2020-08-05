@@ -33,11 +33,11 @@ def get_sparql_dataframe(service, query):
             if varType == "literal" or varType == "typed-literal":
                 dataType = firstRow.get(c,{}).get("datatype")
                 if dataType=="http://www.w3.org/2001/XMLSchema#int":
-                    df[c] = pd.to_numeric(df[c], errors='coerce')
+                    df[c] = df[c].astype("int")
                 if dataType=="http://www.w3.org/2001/XMLSchema#integer":
-                    df[c] = pd.to_numeric(df[c], errors='coerce')
+                    df[c] = df[c].astype("int")
                 if dataType=="http://www.w3.org/2001/XMLSchema#double":
-                    df[c] = pd.to_numeric(df[c], errors='coerce')
+                    df[c] = df[c].astype("float")
                 if dataType=="http://www.w3.org/2001/XMLSchema#string":
                     df[c] = df[c].astype("category")
     
