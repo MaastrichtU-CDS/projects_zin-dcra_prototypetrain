@@ -32,14 +32,18 @@ def get_sparql_dataframe(service, query):
                 df[c] = df[c].astype("category")
             if varType == "literal" or varType == "typed-literal":
                 dataType = firstRow.get(c,{}).get("datatype")
+                targetType = "category"
+                
                 if dataType=="http://www.w3.org/2001/XMLSchema#int":
-                    df[c] = df[c].astype("int")
+                    targetType = "int"
                 if dataType=="http://www.w3.org/2001/XMLSchema#integer":
-                    df[c] = df[c].astype("int")
+                    targetType = "int"
                 if dataType=="http://www.w3.org/2001/XMLSchema#double":
-                    df[c] = df[c].astype("float")
+                    targetType = "float"
                 if dataType=="http://www.w3.org/2001/XMLSchema#string":
-                    df[c] = df[c].astype("category")
+                    targetType = "category"
+                
+                df[c] = df[c].astype(targetType)
     
     return df
 
@@ -71,13 +75,13 @@ def stationAlgorithm(inputStr):
 
     numericalStats = { }
     try:
-        numericalStats = df.describe(exclude=['category']).to_json(orient='records')
+        numericalStats = json.loads(df.describe().to_json())
     except:
         print("No numerical data available?")
 
     outData = {
         "numericalStats": numericalStats,
-        "categoricalStats": describe_category(df).to_json(orient='records')
+        "categoricalStats": json.loads(describe_category(df).to_json(orient='records'))
     }
     outputStr = json.dumps(outData)
 
