@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from SPARQLWrapper import SPARQLWrapper, JSON
 
+
 def get_sparql_dataframe(service, query):
     """
     Helper function to convert SPARQL results into a Pandas data frame.
@@ -32,37 +33,19 @@ def get_sparql_dataframe(service, query):
                 df[c] = df[c].astype("category")
             if varType == "literal" or varType == "typed-literal":
                 dataType = firstRow.get(c,{}).get("datatype")
-                targetType = "category"
-                
                 if dataType=="http://www.w3.org/2001/XMLSchema#int":
-                    targetType = "int"
+                    df[c] = pd.to_numeric(df[c], errors='coerce')
                 if dataType=="http://www.w3.org/2001/XMLSchema#integer":
-                    targetType = "int"
+                    df[c] = pd.to_numeric(df[c], errors='coerce')
                 if dataType=="http://www.w3.org/2001/XMLSchema#double":
-                    targetType = "float"
+                    df[c] = pd.to_numeric(df[c], errors='coerce')
                 if dataType=="http://www.w3.org/2001/XMLSchema#string":
-                    targetType = "category"
-                
-                df[c] = df[c].astype(targetType)
+                    df[c] = df[c].astype("category")
     
     return df
 
-def describe_category(df):
-    outSeries = pd.DataFrame()
-    for column in df.columns:
-        if str(df[column].dtype) == "category":
-            counts = df[column].value_counts()
-            rowNames = counts.index.values
-            counts = counts.to_frame(name="count")
-            counts["category"] = rowNames
-            counts["variable"] = column
-            counts = counts.reset_index(drop=True)
-            outSeries = outSeries.append(counts)
-    return outSeries
-
 def stationAlgorithm(inputStr):
-    outputStr = ''
-    logging.info('starting new calculation')
+
     # --------------------------- PASTE YOUR ALGORITHM HERE -------------------------------
     # define the "outputStr" variable
     # perform station algorithm
@@ -71,20 +54,71 @@ def stationAlgorithm(inputStr):
 
     inputStruct = json.loads(inputStr)
     query = inputStruct["query"]
-    df = get_sparql_dataframe(os.environ.get("sparql_url"), query)
 
-    numericalStats = { }
+    data = get_sparql_dataframe(os.environ.get("sparql_url"), query)
+  
+    outputStr = ''
+    logging.info('starting new calculation')
+    
+    ###### Indicator 2b #########
+
     try:
-        numericalStats = json.loads(df.describe().to_json())
+        data['diagnosedatum'] =  pd.to_datetime(data['diagnosedatum'], format='%m/%d/%Y')
+        data['datum_van_chirurgische_therapie']=pd.to_datetime(data['datum_van_chirurgische_therapie'], format='%m/%d/%Y',errors='coerce')
+        data['datum_van_neoadjuvante_therapie']=pd.to_datetime(data['datum_van_neoadjuvante_therapie'], format='%m/%d/%Y',errors='coerce')
+        colon_values = ['Colon ascendens','Colon Ascendens','Colon sigmoideum','Colon Sigmoideum','Colon transversum', 'Colon Transversum','overgang rectum/sigmoid']
+        fdata = data.loc[data['lokalisatie'].isin(colon_values)]
     except:
-        print("No numerical data available?")
+        data['diagnosedatum'] =  pd.to_datetime(data['diagnosedatum'], format='%Y-%m-%d', errors='coerce')
+        data['datum_van_chirurgische_therapie']=pd.to_datetime(data['datum_van_chirurgische_therapie'], format='%Y-%m-%d',errors= 'coerce')
+        data['datum_van_neoadjuvante_therapie']=pd.to_datetime(data['datum_van_neoadjuvante_therapie'], format='%Y-%m-%d',errors='coerce')
+        colon_values = ['Colon ascendens','Colon Ascendens','Colon sigmoideum','Colon Sigmoideum','Colon transversum', 'Colon Transversum','overgang rectum/sigmoid']
+        fdata = data.loc[data['lokalisatie'].isin(colon_values)]
+    
+    #days calculation
+    datediff_neo = fdata.datum_van_neoadjuvante_therapie - fdata.diagnosedatum
+    datediff_surg = fdata.datum_van_chirurgische_therapie - fdata.diagnosedatum
+    fdata['datediff_neo']=datediff_neo
+    fdata['datediff_surg']=datediff_surg
+
+    limit = 56
+    count_neo = fdata.loc[fdata['datediff_neo']<pd.to_timedelta(limit, unit='D')].shape[0]
+    count_surg = fdata.loc[fdata['datediff_surg']<pd.to_timedelta(limit, unit='D')].shape[0]
+
+    total_count_colon = count_neo + count_surg
+    total_population_colon = fdata.shape[0]
+
+    try:
+        percentage_of_short_waitlist = total_count_colon/total_population_colon
+    except ZeroDivisionError:
+        percentage_of_short_waitlist = 0
+
+
+    ################# Indicator 8 ######################
+    rectum_values = ['Rectum','rectum']
+    fdata2 = data.loc[data['lokalisatie'].isin(rectum_values)]
+    #count_rectum = fdata2.loc[fdata2['gecompliceerd_beloop']=='Ja'].shape[0]
+    count_rectum = fdata2[fdata2['gecompliceerd_beloop'].isin(["Ja","1"])].shape[0]
+    total_population_rectum = fdata2.shape[0]
+
+    try:
+        complication_rate = count_rectum/total_population_rectum
+    except ZeroDivisionError:
+        complication_rate = 0
+    
 
     outData = {
-        "numericalStats": numericalStats,
-        "categoricalStats": json.loads(describe_category(df).to_json(orient='records'))
-    }
+        'total_count_colon':total_count_colon,
+        'total_population_colon':total_population_colon,
+        'percentage_of_short_waitlist':percentage_of_short_waitlist,
+        'count_rectum': count_rectum,
+        'total_population_rectum':total_population_rectum,
+        'complication_rate':complication_rate,
+        }
+
+    
     outputStr = json.dumps(outData)
 
-    logging.info('done with calculation')
+    logging.info('done with calculation') 
 
     return outputStr
